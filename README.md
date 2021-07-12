@@ -8,7 +8,7 @@ Fetch logs from Acquia Logstream, massage, and POST to New Relic Logs.
 - Redirect stdOut if you dont want to see log lines in the console.
 
 #### Environment variables
-AC_API2_KEY
-AC_API2_SECRET
-AC_API_ENVIRONMENT_UUID
-NR_LICENSE_KEY
+- AC_API2_KEY
+- AC_API2_SECRET
+- AC_API_ENVIRONMENT_UUID
+- NR_LICENSE_KEY
