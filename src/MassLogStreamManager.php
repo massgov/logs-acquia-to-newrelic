@@ -7,17 +7,12 @@ namespace Massgov\LogsAcquiaToNewrelic;
 use Monolog\Handler\BufferHandler;
 use Monolog\Logger;
 use NewRelic\Monolog\Enricher\{Handler, Processor};
-use Ratchet\Client\Connector as Ratchet;
-use Ratchet\Client\WebSocket;
-use Ratchet\RFC6455\Messaging\MessageInterface;
-use React\EventLoop\Factory as EventLoop;
-use React\Socket\Connector as React;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
 {
-    private Logger $log;
+    protected Logger $log;
 
     public function __construct(InputInterface $input, OutputInterface $output)
     {
@@ -34,68 +29,15 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
     /**
      * Customized to buffer each message to Monolog (and on to New Relic from there).
      */
-    public function stream()
+    protected function processMessage($msg)
     {
-        $loop = EventLoop::create();
-        $reactConnector = new React($loop, [
-            'dns' => $this->dns,
-            'timeout' => $this->timeout
-        ]);
-
-        $connector = new Ratchet($loop, $reactConnector);
-
-        $connector(self::LOGSTREAM_URI)
-            ->then(function (WebSocket $conn) {
-                $conn->on('message', function (MessageInterface $msg) use ($conn) {
-                    $message = json_decode($msg);
-
-                    switch ($message->cmd) {
-                        case 'available':
-                            if (empty($this->logTypes) || in_array($message->type, $this->logTypes)) {
-                                if (empty($this->servers) || in_array($message->server, $this->servers)) {
-                                    $enable = [
-                                        'cmd' => 'enable',
-                                        'type' => $message->type,
-                                        'server' => $message->server
-                                    ];
-
-                                    $conn->send(json_encode($enable));
-                                }
-                            }
-                            break;
-                        case 'connected':
-                        case 'success':
-                            if ($this->output->isDebug()) {
-                                $this->output->writeln($msg);
-                            }
-                            break;
-                        case 'line':
-                            // MASS CUSTOMIZATIONS
-                            $json = $this->enrichJson($message->text);
-                            $verb = $message->http_status >= 400 ? 'error' : 'info';
-                            $this->log->$verb($json);
-                            echo "\n$message->text\n";
-                            // END CUSTOMIZATION
-                            break;
-                        case 'error':
-                            $this->output->writeln("<fg=red>${msg}</>");
-                            break;
-                        default:
-                            break;
-                    }
-                });
-
-                $conn->on('close', function ($code = null, $reason = null) {
-                    echo "Connection closed ({$code} - {$reason})\n";
-                });
-
-                $conn->send(json_encode($this->getAuthArray()));
-            }, function (\Exception $e) use ($loop) {
-                echo "Could not connect: {$e->getMessage()}\n";
-                $loop->stop();
-            });
-
-        $loop->run();
+        $message = json_decode($msg);
+        if ($message->cmd === 'line') {
+            $json = $this->enrichJson($message->text);
+            $verb = $message->http_status >= 400 ? 'error' : 'info';
+            $this->log->$verb($json);
+        }
+        return parent::processMessage($msg);
     }
 
     protected function enrichJson($json)

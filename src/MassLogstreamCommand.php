@@ -2,27 +2,27 @@
 
 namespace Massgov\LogsAcquiaToNewrelic;
 
+use AcquiaLogstream\LogstreamManager;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use AcquiaCloudApi\Connector\Client;
 use AcquiaCloudApi\Connector\Connector;
 use AcquiaCloudApi\Endpoints\Logs;
 
+/**
+ * Uses our own MassLogStreamManager instead of the typhonius one.
+ */
 class MassLogstreamCommand extends Command
 {
 
     protected static $defaultName = 'mass:logstream';
 
-    /**
-     * @inheritdoc
-     */
     protected function configure()
     {
         $this
-            ->setDescription('Streams logs from Acquia Cloud to New Relic Logs')
+            ->setDescription('Streams logs directly from the Acquia Cloud')
             ->addOption(
                 'logtypes',
                 't',
