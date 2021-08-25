@@ -12,3 +12,6 @@ Fetch logs from Acquia Logstream, massage, and POST to New Relic Logs.
 - AC_API2_SECRET
 - AC_API_ENVIRONMENT_UUID (see Prod entry in self.site.yml)
 - NR_LICENSE_KEY
+
+## Docker image
+See [Docker Hub](https://hub.docker.com/repository/docker/massgov/logs-acquia-to-newrelic) for a containerized version of this command.
