@@ -1,0 +1,12 @@
+#
+#version: '3.6'
+#
+#services:
+## Only uncomment if testing sending logs to New Relic. Container may ship duplicate logs to New Relic if run locally.
+#  streamer:
+#    image: massgov/logs-acquia-to-newrelic:latest
+#    environment:
+#      AC_API2_KEY:
+#      AC_API2_SECRET:
+#      AC_API_ENVIRONMENT_UUID:
+#      NR_LICENSE_KEY:
