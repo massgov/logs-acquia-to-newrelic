@@ -72,16 +72,6 @@ variable "cluster_instance_patch_group" {
   type = string
 }
 
-variable "collector_image" {
-  type        = string
-  description = "The Docker image to use for the Acquia log collection container"
-}
-
-variable "heartbeat_image" {
-  type        = string
-  description = "The Docker image to use for the heartbeat container"
-}
-
 variable "AC_API2_KEY" {
   type = string
 }

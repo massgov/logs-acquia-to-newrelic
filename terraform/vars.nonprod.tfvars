@@ -18,7 +18,7 @@ instance_count = 2
 massgov_es_retention_days = 7
 other_es_retention_days = 30
 
-chamber_namespace = "apps/mds-elk/nonprod"
+chamber_namespace = "apps/logs-acquia-to-newrelic/nonprod"
 
 tags = {
   environment = "dev"
