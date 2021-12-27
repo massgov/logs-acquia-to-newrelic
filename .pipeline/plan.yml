@@ -1,0 +1,22 @@
+# This represents the "Plan" job for our CI pipeline.
+#
+# The "Plan" job will be run when code is pushed to a branch other than `develop` or `master`.
+# This job operates with Read-Only IAM permissions, meaning you can see the state of resources, but not change them.
+# The definition can be changed here to suit the individual project.
+version: 0.2
+
+cache:
+  paths:
+    - terraform/dist/*
+
+phases:
+  build:
+    commands:
+    - cd terraform
+    - terraform init -input=false
+    - terraform workspace select nonprod
+    - echo -e "\n\n***********\nNONPROD PLAN\n\n***********"
+    - chamber exec "$CHAMBER_NAMESPACE/nonprod" -- terraform plan -no-color -input=false -lock=false -var-file=vars.nonprod.tfvars
+    - echo -e "\n\n***********\nPROD PLAN\n\n***********"
+    - terraform workspace select prod
+    - chamber exec "$CHAMBER_NAMESPACE/prod" -- terraform plan -no-color -input=false -lock=false -var-file=vars.prod.tfvars
