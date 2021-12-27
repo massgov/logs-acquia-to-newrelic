@@ -1,0 +1,20 @@
+[{
+    "name": "streamer",
+    "image": "${image}",
+    "environment": [
+        { "name": "AC_API2_KEY", "value": "${AC_API2_KEY}" },
+        { "name": "AC_API2_SECRET", "value": "${AC_API2_SECRET}" },
+        { "name": "AC_API_ENVIRONMENT_UUID", "value": "${AC_API_ENVIRONMENT_UUID}" },
+        { "name": "NR_LICENSE_KEY", "value": "${NR_LICENSE_KEY}" }
+    ],
+    "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${log_group}",
+            "awslogs-region": "${log_region}",
+            "awslogs-stream-prefix": "streamer"
+        }
+    },
+    "memory": 256,
+    "cpu": 512
+}]
