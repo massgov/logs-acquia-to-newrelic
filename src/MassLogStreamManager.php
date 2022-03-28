@@ -33,14 +33,19 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
     {
         $message = json_decode($msg);
         if ($message->cmd === 'line') {
-            $json = $this->enrichJson($message->text);
-            $verb = $message->http_status >= 400 ? 'error' : 'info';
-            $this->log->$verb($json);
+            if ($message->log_type == 'varnish-request') {
+              $json = $this->processVarnish($message->text);
+              $verb = $message->http_status >= 400 ? 'error' : 'info';
+              $this->log->$verb($json);
+            }
+            elseif ($message->log_type == 'drupal-watchdog') {
+              $this->processWatchdog($message->text);
+            }
         }
         return parent::processMessage($msg);
     }
 
-    protected function enrichJson($json)
+    protected function processVarnish($json)
     {
         $record = json_decode($json);
         $time = $record->time;
@@ -49,4 +54,22 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $record->logtype = 'varnish.request';
         return json_encode($record);
     }
+
+  protected function processWatchdog($line)
+  {
+    $pos = strpos($line, '{');
+    if (!$pos) {
+      return;
+    }
+    $json = substr($line, $pos, strlen($line) - $pos);
+    $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
+    // Add extra items to top level.
+    $extra = $record['extra'];
+    $context = $record['context'];
+    unset($extra['user'], $extra['base_url']);
+    $record = array_merge($record, $extra);
+    unset($record['datetime'], $record['context'], $record['extra']);
+    $record['logtype'] = 'drupal.watchdog';
+    $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $context);
+  }
 }
