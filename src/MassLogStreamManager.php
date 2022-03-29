@@ -21,7 +21,7 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $log->pushProcessor(new Processor);
         $handler = new Handler;
         $handler->setLicenseKey(getenv('NR_LICENSE_KEY'));
-        $records_until_http_send = 50;
+        $records_until_http_send = getenv('NUM_BUFFER') ?: 50;
         $log->pushHandler(new BufferHandler($handler, $records_until_http_send, Logger::DEBUG, true, true));
         $this->log = $log;
     }
@@ -63,13 +63,9 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
     }
     $json = substr($line, $pos, strlen($line) - $pos);
     $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
-    // Add extra items to top level.
-    $extra = $record['extra'];
-    $context = $record['context'];
-    unset($extra['user'], $extra['base_url']);
-    $record = array_merge($record, $extra);
-    unset($record['datetime'], $record['context'], $record['extra']);
+    unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
     $record['logtype'] = 'drupal.watchdog';
-    $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $context);
+    $record['error_type'] = 'keep-until-drop-filter-is-removed';
+    $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
   }
 }
