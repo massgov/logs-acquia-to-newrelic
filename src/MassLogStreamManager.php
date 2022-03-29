@@ -21,7 +21,7 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $log->pushProcessor(new Processor);
         $handler = new Handler;
         $handler->setLicenseKey(getenv('NR_LICENSE_KEY'));
-        $records_until_http_send = 50;
+        $records_until_http_send = getenv('NUM_BUFFER') ?: 50;
         $log->pushHandler(new BufferHandler($handler, $records_until_http_send, Logger::DEBUG, true, true));
         $this->log = $log;
     }
@@ -33,14 +33,19 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
     {
         $message = json_decode($msg);
         if ($message->cmd === 'line') {
-            $json = $this->enrichJson($message->text);
-            $verb = $message->http_status >= 400 ? 'error' : 'info';
-            $this->log->$verb($json);
+            if ($message->log_type == 'varnish-request') {
+              $json = $this->processVarnish($message->text);
+              $verb = $message->http_status >= 400 ? 'error' : 'info';
+              $this->log->$verb($json);
+            }
+            elseif ($message->log_type == 'drupal-watchdog') {
+              $this->processWatchdog($message->text);
+            }
         }
         return parent::processMessage($msg);
     }
 
-    protected function enrichJson($json)
+    protected function processVarnish($json)
     {
         $record = json_decode($json);
         $time = $record->time;
@@ -49,4 +54,18 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $record->logtype = 'varnish.request';
         return json_encode($record);
     }
+
+  protected function processWatchdog($line)
+  {
+    $pos = strpos($line, '{');
+    if (!$pos) {
+      return;
+    }
+    $json = substr($line, $pos, strlen($line) - $pos);
+    $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
+    unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
+    $record['logtype'] = 'drupal.watchdog';
+    $record['error_type'] = 'keep-until-drop-filter-is-removed';
+    $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
+  }
 }
