@@ -3,7 +3,7 @@
     "description": "Collects logstream from Acquia and forwards to New Relic Logs",
     "require": {
         "newrelic/monolog-enricher": "^2.0",
-        "typhonius/acquia-logstream": "^0.6.0",
+        "typhonius/acquia-logstream": "^0.0.12",
       "ext-json": "*"
     },
     "autoload": {
