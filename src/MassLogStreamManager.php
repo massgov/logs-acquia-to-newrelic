@@ -57,15 +57,18 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
 
   protected function processWatchdog($line)
   {
-    $pos = strpos($line, '{');
-    if (!$pos) {
+    $end_pos = strrpos($line, '}') - 1;
+    $json = substr($line, 0, strlen($line) - $end_pos);
+    $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
+    if (!isset($record)) {
       return;
     }
-    $json = substr($line, $pos, strlen($line) - $pos);
-    $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
-    unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
-    $record['logtype'] = 'drupal.watchdog';
-    $record['error_type'] = 'keep-until-drop-filter-is-removed';
-    $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
+    else {
+      unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
+      $record['logtype'] = 'drupal.watchdog';
+      $record['error_type'] = 'keep-until-drop-filter-is-removed';
+      $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
+    }
+
   }
 }

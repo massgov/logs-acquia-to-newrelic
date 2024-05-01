@@ -1,4 +1,4 @@
-FROM php:7.4-cli
+FROM php:8.2-cli
 COPY . /usr/src/myapp
 WORKDIR /usr/src/myapp
 RUN apt-get update && apt-get install -y libzip-dev zip && docker-php-ext-install zip
