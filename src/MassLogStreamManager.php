@@ -70,6 +70,5 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
     $record['logtype'] = 'drupal.watchdog';
     $record['error_type'] = 'keep-until-drop-filter-is-removed';
     $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
-
   }
 }
