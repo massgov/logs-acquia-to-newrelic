@@ -21,7 +21,7 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $log->pushProcessor(new Processor);
         $handler = new Handler;
         $handler->setLicenseKey(getenv('NR_LICENSE_KEY'));
-        $records_until_http_send = 1;
+        $records_until_http_send = getenv('NUM_BUFFER') ?: 50;
         $log->pushHandler(new BufferHandler($handler, $records_until_http_send, Logger::DEBUG, true, true));
         $this->log = $log;
     }
