@@ -19,5 +19,5 @@ See [Docker Hub](https://hub.docker.com/repository/docker/massgov/logs-acquia-to
 This Docker image is used in the [Digital Services Elk Stack](https://github.com/massgov/mds-elk) to stream logs to New Relic.
 
 To manually build and push a new version of the container to Docker Hub:
-1. From the latest main branch, run `docker build -t massgov/logs-acquia-to-newrelic:latest`.
+1. From the latest main branch, run `docker build --platform linux/amd64 -t massgov/logs-acquia-to-newrelic:latest .`.
 2. Run `docker push massgov/logs-acquia-to-newrelic:latest`.
