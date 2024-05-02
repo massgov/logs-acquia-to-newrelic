@@ -21,7 +21,7 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $log->pushProcessor(new Processor);
         $handler = new Handler;
         $handler->setLicenseKey(getenv('NR_LICENSE_KEY'));
-        $records_until_http_send = getenv('NUM_BUFFER') ?: 50;
+        $records_until_http_send = 1;
         $log->pushHandler(new BufferHandler($handler, $records_until_http_send, Logger::DEBUG, true, true));
         $this->log = $log;
     }
@@ -57,18 +57,19 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
 
   protected function processWatchdog($line)
   {
-    $end_pos = strrpos($line, '}') - 1;
-    $json = substr($line, 0, strlen($line) - $end_pos);
-    $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
-    if (!isset($record)) {
+    $start_pos = strpos($line, '{');
+    $end_pos = strlen($line) - strrpos($line, '}') - 1;
+
+    if ($start_pos === false) {
       return;
     }
-    else {
-      unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
-      $record['logtype'] = 'drupal.watchdog';
-      $record['error_type'] = 'keep-until-drop-filter-is-removed';
-      $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
-    }
+
+    $json = substr($line, $start_pos, strlen($line) - $start_pos - $end_pos);
+    $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
+    unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
+    $record['logtype'] = 'drupal.watchdog.test';
+    $record['error_type'] = 'keep-until-drop-filter-is-removed';
+    $this->log->addRecord($this->log->toMonologLevel($record['level_name']), json_encode($record), $record['context']);
 
   }
 }
