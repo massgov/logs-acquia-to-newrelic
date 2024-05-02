@@ -57,11 +57,14 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
 
   protected function processWatchdog($line)
   {
-    $pos = strpos($line, '{');
-    if (!$pos) {
+    $start_pos = strpos($line, '{');
+    $end_pos = strlen($line) - strrpos($line, '}') - 1;
+
+    if ($start_pos === false) {
       return;
     }
-    $json = substr($line, $pos, strlen($line) - $pos);
+
+    $json = substr($line, $start_pos, strlen($line) - $start_pos - $end_pos);
     $record = json_decode($json, JSON_OBJECT_AS_ARRAY);
     unset($record['datetime'], $record['extra']['user'], $record['extra']['base_url']);
     $record['logtype'] = 'drupal.watchdog';
