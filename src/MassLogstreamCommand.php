@@ -81,7 +81,9 @@ class MassLogstreamCommand extends Command
         $logstream = new MassLogStreamManager($input, $output);
         $logstream->setParams($stream->logstream->params);
 
-        $logstream->setLogTypeFilter($input->getOption('logtypes'));
+        $logtypes = explode(',', getenv('LOG_TYPES'));
+        $logstream->setLogTypeFilter($logtypes);
+
         $logstream->setLogServerFilter($input->getOption('servers'));
         $logstream->setColourise($input->getOption('colourise'));
         $logstream->stream();
