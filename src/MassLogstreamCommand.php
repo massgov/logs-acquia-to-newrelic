@@ -82,14 +82,15 @@ class MassLogstreamCommand extends Command
         $logstream->setParams($stream->logstream->params);
 
         // @todo Remove after successful deployment. This is intended to prevent breakage for current environments.
-        if ($logtypes = getenv('LOG_TYPES')) {
-          $logtypes = explode(',', $logtypes);
+        $logtypes = [
+          'varnish-request',
+          'drupal-watchdog',
+        ];
+        if ($input->getOption('logtypes')) {
+          $logtypes = $input->getOption('logtypes');
         }
-        else {
-          $logtypes = [
-            'varnish-request',
-            'drupal-watchdog',
-          ];
+        elseif ($logtypes_env = getenv('LOG_TYPES')) {
+          $logtypes = explode(',', $logtypes_env);
         }
 
         $logstream->setLogTypeFilter($logtypes);
