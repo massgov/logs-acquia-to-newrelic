@@ -1,3 +1,4 @@
 /vendor/
 .envrc
 .env
+.idea

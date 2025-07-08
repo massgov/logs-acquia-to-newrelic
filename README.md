@@ -1,11 +1,35 @@
-Fetch logs from Acquia Logstream, massage, and POST to New Relic Logs.
+# Logs Acquia to New Relic
+
+## Table of Contents
+- [Overview](#overview)
+- [Project Contacts](#project-contacts)
+- [Knowledge History](#knowledge-history)
+
+
+## Overview
+Fetch logs from Acquia Log stream, massage, and POST to New Relic Logs.
+
+
+## Project Contacts
+
+| Name     | Role  | Email                                                               |
+|----------|-------|---------------------------------------------------------------------|
+| SSR-Team | Infra | [EOTSS-DL-DigitalSSR@mass.gov](mailto:EOTSS-DL-DigitalSSR@mass.gov) |
+|          |       |                                                                     |
+
+
+## Knowledge History
+This section is to be used to describe history of knowledge around the project in a `change log` fashion
+
+Can be used described here, or moved to a new file. If moved, add reference to `docs.manifest` so that can be uploaded to doc site for better.
+
 
 #### Usage
 
 ./index.php mass:logstream --logtypes=varnish-request --logtypes=drupal-watchdog
 
-- Other logtypes can be fetched but their records are not parsed correctly as they dont get delivered in JSON but rather in unparsed log lines.
-- Redirect stdOut if you dont want to see log lines in the console.
+- Other logtypes can be fetched but their records are not parsed correctly as they don't get delivered in JSON but rather in unparsed log lines.
+- Redirect stdOut if you don't want to see log lines in the console.
 
 #### Required Environment variables
 - AC_API2_KEY
