@@ -8,11 +8,6 @@
         "ext-curl": "*",
         "ext-json": "*"
     },
-    "config": {
-        "platform": {
-            "php": "8.3.36"
-        }
-    },
     "autoload": {
         "psr-4": {
             "Massgov\\LogsAcquiaToNewrelic\\": "src/"
