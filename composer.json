@@ -2,7 +2,7 @@
     "name": "massgov/logs-acquia-to-newrelic",
     "description": "Collects logstream from Acquia and forwards to New Relic Logs",
     "require": {
-        "php": "~8.3.36",
+        "php": "~8.3.37",
         "newrelic/monolog-enricher": "^2.0",
         "typhonius/acquia-logstream": "^0.0.15",
         "ext-curl": "*",
