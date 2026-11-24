@@ -78,7 +78,7 @@ class MassLogstreamCommand extends Command
 
         $stream = $logs->stream(getenv('AC_API_ENVIRONMENT_UUID'));
 
-        $logstream = new MassLogStreamManager($input, $output);
+        $logstream = new MassLogStreamManager($input, $output, $stream->logstream->url);
         $logstream->setParams($stream->logstream->params);
 
         if (!empty($input->getOption('logtypes'))) {

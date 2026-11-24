@@ -7,16 +7,23 @@ namespace Massgov\LogsAcquiaToNewrelic;
 use Monolog\Handler\BufferHandler;
 use Monolog\Logger;
 use NewRelic\Monolog\Enricher\{Handler, Processor};
+use Ratchet\Client\Connector as WebSocketConnector;
+use Ratchet\Client\WebSocket;
+use Ratchet\RFC6455\Messaging\MessageInterface;
+use React\EventLoop\Factory as EventLoop;
+use React\Socket\Connector as SocketConnector;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
 {
     protected Logger $log;
+    private string $streamUrl;
 
-    public function __construct(InputInterface $input, OutputInterface $output)
+    public function __construct(InputInterface $input, OutputInterface $output, string $streamUrl)
     {
         parent::__construct($input, $output);
+        $this->streamUrl = $streamUrl;
         $log = new Logger('log');
         $log->pushProcessor(new Processor);
         $handler = new Handler;
@@ -24,6 +31,41 @@ class MassLogStreamManager extends \AcquiaLogstream\LogstreamManager
         $records_until_http_send = getenv('NUM_BUFFER') ?: 50;
         $log->pushHandler(new BufferHandler($handler, $records_until_http_send, Logger::DEBUG, true, true));
         $this->log = $log;
+    }
+
+    /**
+     * Uses the API-provided URL instead of the parent class's fixed endpoint.
+     */
+    public function stream()
+    {
+        $loop = EventLoop::create();
+        $socketConnector = new SocketConnector($loop, [
+            'dns' => $this->getDns(),
+            'timeout' => $this->getTimeout(),
+        ]);
+        $connector = new WebSocketConnector($loop, $socketConnector);
+
+        $connector($this->streamUrl)->then(
+            function (WebSocket $conn) {
+                $conn->on('message', function (MessageInterface $msg) use ($conn) {
+                    if ($send = $this->processMessage($msg)) {
+                        $conn->send($send);
+                    }
+                });
+
+                $conn->on('close', function ($code = null, $reason = null) {
+                    echo "Connection closed ({$code} - {$reason})\n";
+                });
+
+                $conn->send(json_encode($this->getAuthArray()));
+            },
+            function (\Exception $e) use ($loop) {
+                echo "Could not connect: {$e->getMessage()}\n";
+                $loop->stop();
+            }
+        );
+
+        $loop->run();
     }
 
     /**
